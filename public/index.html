@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Client Invoice Portal</title>
+        <link rel="stylesheet" href="styles.css" />
+        <!-- Client-side PDF Generation -->
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    </head>
+    <body>
+        <div class="container">
+            <!-- Login Screen -->
+            <div id="login-card" class="card">
+                <h2>Invoice Portal Login</h2>
+                <input
+                    type="password"
+                    id="password-input"
+                    placeholder="Enter Portal Password"
+                />
+                <button onclick="login()">Log In</button>
+                <p id="login-error" class="error"></p>
+            </div>
+
+            <!-- Main Dashboard -->
+            <div id="portal-dashboard" class="card hidden">
+                <div class="header">
+                    <h2>Invoices</h2>
+                    <input
+                        type="text"
+                        id="search-input"
+                        placeholder="Filter by Name or Personal Code..."
+                        onkeyup="filterInvoices()"
+                    />
+                </div>
+
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Customer</th>
+                            <th>Personal Code</th>
+                            <th>Amount</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="invoice-rows"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <script src="app.js"></script>
+    </body>
+</html>
