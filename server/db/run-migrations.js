@@ -1,6 +1,21 @@
 import { readdir, readFile, stat } from "fs/promises";
 import path from "path";
 import { Client } from "pg";
+import dotenv from "dotenv";
+import fs from "fs";
+
+const envFiles = [
+  ".env.development.local",
+  ".env.local",
+  ".env"
+];
+
+for (const file of envFiles) {
+  const envPath = path.join(process.cwd(), file);
+  if (fs.existsSync(envPath)) {
+    dotenv.config({ path: envPath });
+  }
+}
 
 // Place all .sql files directly in `db/` (no subdirectories).
 const dir = path.join(process.cwd(), "db");
