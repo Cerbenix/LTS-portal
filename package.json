@@ -7,10 +7,13 @@
     "dev": "nuxt dev",
     "generate": "nuxt generate",
     "preview": "nuxt preview",
-    "postinstall": "nuxt prepare"
+    "postinstall": "nuxt prepare",
+    "migrate": "node server/db/run-migrations.js",
+    "vercel-build": "node server/db/run-migrations.js && nuxt build"
   },
   "dependencies": {
     "@neondatabase/serverless": "^1.1.0",
+    "pg": "^8.11.0",
     "googleapis": "^174.0.1",
     "nodemailer": "^9.0.5",
     "nuxt": "^4.5.2",
