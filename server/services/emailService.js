@@ -13,7 +13,6 @@ export class EmailService {
     }
 
     async sendInvoiceEmail(invoice) {
-        // Generate PDF in-memory
         const pdfBuffer = await PdfService.generateBuffer(invoice);
 
         const mailOptions = {

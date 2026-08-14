@@ -11,15 +11,11 @@ export class DriveService {
         this.drive = google.drive({ version: "v3", auth: this.auth });
     }
 
-    /**
-     * Transforms raw Koalendar webhook body into internal Invoice format
-     */
     parseKoalendarPayload(bookingData) {
         const customerName = bookingData.invitee?.name || "Customer";
         const customerEmail = bookingData.invitee?.email || "";
         const fields = bookingData.invitee?.fields || {};
 
-        // Search for personal code in custom fields
         const personalCode =
             fields.personal_code ||
             fields["Personal Code / Personas Kods"] ||
@@ -44,14 +40,8 @@ export class DriveService {
         };
     }
 
-    /**
-     * Saves invoice object as JSON file to Google Drive
-     */
     async saveInvoice(invoicePayload) {
-        const safeName = invoicePayload.customer.name.replace(
-            /[^a-zA-Z0-9]/g,
-            "_",
-        );
+        const safeName = invoicePayload.customer.name.replace(/[^a-zA-Z0-9]/g, "_");
         const fileName = `INV_${invoicePayload.invoiceNumber}_${safeName}.json`;
 
         const response = await this.drive.files.create({
@@ -69,9 +59,6 @@ export class DriveService {
         return response.data;
     }
 
-    /**
-     * Fetches all invoice JSON files from Google Drive folder
-     */
     async fetchAllInvoices() {
         const res = await this.drive.files.list({
             q: `'${process.env.GOOGLE_DRIVE_FOLDER_ID}' in parents and mimeType='application/json' and trashed=false`,
