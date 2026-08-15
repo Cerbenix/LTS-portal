@@ -1,6 +1,6 @@
 import { readBody, getQuery, createError } from "h3";
 import { assertWebhookSecret } from "../utils/http.js";
-import { handleBookingWebhook } from "../services/webhookService.js";
+import { handleBookingWebhook } from "../services/bookingService.js";
 
 export default defineEventHandler(async (event) => {
   const body = await readBody(event);

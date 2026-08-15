@@ -24,3 +24,24 @@ export async function upsertBooking(booking) {
 
     return result?.[0];
 }
+
+export async function getAllBookings() {
+  const sql = getSql();
+  return await sql`
+    SELECT 
+      id, status, link_id, link_name,
+      parent_name, parent_email, parent_phone,
+      child_name, personal_code,
+      start_at, created_at
+    FROM bookings
+    ORDER BY start_at DESC;
+  `;
+}
+
+export async function getBookingById(id) {
+  const sql = getSql();
+  const result = await sql`
+    SELECT * FROM bookings WHERE id = ${id} LIMIT 1;
+  `;
+  return result[0] || null;
+}

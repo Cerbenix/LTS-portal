@@ -1,9 +1,8 @@
-import { upsertBooking } from '../repositories/bookingRepository.js';
+import { upsertBooking, getAllBookings } from '../repositories/bookingRepository.js';
 
 export async function handleBookingWebhook(payload) {
   const fields = payload.invitee?.fields || {};
   const isCanceled = payload.type === 'event.canceled';
-
   const bookingData = {
     id: payload.id,
     status: isCanceled ? 'CANCELED' : 'CONFIRMED',
@@ -19,4 +18,12 @@ export async function handleBookingWebhook(payload) {
   };
 
   return await upsertBooking(bookingData);
+}
+
+export async function fetchAllBookings() {
+  const bookings = await getAllBookings();
+  return bookings.map(booking => ({
+    ...booking,
+    formattedDate: new Date(booking.start_at).toLocaleDateString('lv-LV'),
+  }));
 }
