@@ -1,20 +1,25 @@
 import { readBody, getQuery, createError } from "h3";
 import { assertWebhookSecret } from "../utils/http.js";
-import { DriveService } from "../services/driveService.js";
+import { handleBookingWebhook } from "../services/webhookService.js";
 
 export default defineEventHandler(async (event) => {
-    const body = await readBody(event);
-    const query = getQuery(event);
+  const body = await readBody(event);
+  const query = getQuery(event);
 
-    try {
-        assertWebhookSecret(query);
+  try {
+    assertWebhookSecret(query);
 
-        const driveService = new DriveService();
-        const invoice = driveService.parseKoalendarPayload(body);
-        await driveService.saveInvoice(invoice);
+    const savedBooking = await handleBookingWebhook(body);
 
-        return { success: true, invoiceNumber: invoice.invoiceNumber };
-    } catch (err) {
-        throw createError({ statusCode: err.statusCode || 500, statusMessage: err.message || String(err) });
-    }
+    return {
+      success: true,
+      bookingId: savedBooking.id,
+      status: savedBooking.status,
+    };
+  } catch (err) {
+    throw createError({
+      statusCode: err.statusCode || 500,
+      statusMessage: err.message || String(err),
+    });
+  }
 });
