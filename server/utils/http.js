@@ -10,7 +10,6 @@ export function assertPortalAuth(body) {
 
 export function assertWebhookSecret(query) {
     const secret = query?.secret;
-    console.log("Webhook secret received:", process.env.WEBHOOK_SECRET);
     if (!secret || secret !== process.env.WEBHOOK_SECRET) {
         throw createError({ statusCode: 401, statusMessage: "Unauthorized: Missing or invalid secret token" });
     }
