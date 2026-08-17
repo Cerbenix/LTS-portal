@@ -1,6 +1,20 @@
-import { getSql } from "../db/client.js";
+import { getSql } from "../db/client";
 
-export async function upsertBooking(booking) {
+interface BookingInput {
+    id: string;
+    status: string;
+    linkId?: string | null;
+    linkName?: string | null;
+    parentName?: string | null;
+    parentEmail?: string | null;
+    parentPhone?: string | null;
+    childName?: string | null;
+    personalCode?: string | null;
+    startAt?: string | null;
+    rawPayload?: unknown;
+}
+
+export async function upsertBooking(booking: BookingInput) {
     const sql = getSql();
 
     const result = await sql`
@@ -26,8 +40,8 @@ export async function upsertBooking(booking) {
 }
 
 export async function getAllBookings() {
-  const sql = getSql();
-  return await sql`
+    const sql = getSql();
+    return await sql`
     SELECT 
       id, status, link_id, link_name,
       parent_name, parent_email, parent_phone,
@@ -38,10 +52,10 @@ export async function getAllBookings() {
   `;
 }
 
-export async function getBookingById(id) {
-  const sql = getSql();
-  const result = await sql`
+export async function getBookingById(id: string) {
+    const sql = getSql();
+    const result = await sql`
     SELECT * FROM bookings WHERE id = ${id} LIMIT 1;
   `;
-  return result[0] || null;
+    return result[0] || null;
 }

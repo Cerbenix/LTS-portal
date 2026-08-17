@@ -8,18 +8,29 @@
     "generate": "nuxt generate",
     "preview": "nuxt preview",
     "postinstall": "nuxt prepare",
-    "migrate": "node server/db/run-migrations.js",
-    "vercel-build": "node server/db/run-migrations.js && nuxt build"
+    "migrate": "npx tsx server/db/run-migrations.ts",
+    "vercel-build": "npx tsx server/db/run-migrations.ts && nuxt build"
   },
   "dependencies": {
     "@neondatabase/serverless": "^1.1.0",
+    "@nuxt/eslint": "^1.17.0",
     "dotenv": "^16.3.1",
-    "pg": "^8.11.0",
+    "eslint": "^10.8.1",
     "googleapis": "^174.0.1",
     "nodemailer": "^9.0.5",
     "nuxt": "^4.5.2",
     "pdfkit": "^0.19.1",
+    "pg": "^8.11.0",
     "vue": "^3.5.41",
     "vue-router": "^5.2.0"
+  },
+  "devDependencies": {
+    "@types/node": "^26.2.0",
+    "@types/nodemailer": "^6.4.17",
+    "@types/pdfkit": "^0.17.6",
+    "@types/pg": "^8.23.0",
+    "tsx": "^4.20.0",
+    "typescript": "^7.0.2",
+    "vue-tsc": "^3.3.10"
   }
 }

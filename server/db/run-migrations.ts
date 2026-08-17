@@ -1,36 +1,28 @@
 import { readdir, readFile, stat } from "fs/promises";
+import { existsSync } from "fs";
 import path from "path";
 import { Client } from "pg";
 import dotenv from "dotenv";
-import fs from "fs";
 
-const envFiles = [
-  ".env.development.local",
-  ".env.local",
-  ".env"
-];
-
+// Load local environment files if present
+const envFiles = [".env.development.local", ".env.local", ".env"];
 for (const file of envFiles) {
-  const envPath = path.join(process.cwd(), file);
-  if (fs.existsSync(envPath)) {
-    dotenv.config({ path: envPath });
-  }
+    const envPath = path.join(process.cwd(), file);
+    if (existsSync(envPath)) {
+        dotenv.config({ path: envPath });
+    }
 }
 
-// Place all .sql files directly in `db/` (no subdirectories).
 const dir = path.join(process.cwd(), "db");
+
 try {
     const s = await stat(dir);
     if (!s.isDirectory()) {
-        console.error(
-            "`db` exists but is not a directory. Create a `db/` directory with .sql files.",
-        );
+        console.error("`db` exists but is not a directory. Create a `db/` directory with .sql files.");
         process.exit(1);
     }
-} catch (e) {
-    console.error(
-        "No `db/` directory found. Create a `db/` directory and add your .sql migrations.",
-    );
+} catch {
+    console.error("No `db/` directory found. Create a `db/` directory and add your .sql migrations.");
     process.exit(1);
 }
 
@@ -45,7 +37,7 @@ const client = new Client({ connectionString });
 try {
     await client.connect();
 
-    // Ensure migrations table exists to track applied files.
+    // Ensure migrations table exists
     await client.query(`
     CREATE TABLE IF NOT EXISTS migrations (
       id SERIAL PRIMARY KEY,
@@ -54,15 +46,11 @@ try {
     );
   `);
 
-    // Collect .sql files directly under `db/` (no recursion).
+    // Collect and sort .sql files in `db/`
     const entries = await readdir(dir);
-    const fullFiles = [];
-    for (const entry of entries) {
-        if (entry.endsWith(".sql")) fullFiles.push(path.join(dir, entry));
-    }
-    // Use filenames (basename) as canonical filenames for tracking and ordering.
-    const files = fullFiles
-        .map((f) => ({ full: f, rel: path.basename(f) }))
+    const files = entries
+        .filter((entry) => entry.endsWith(".sql"))
+        .map((file) => ({ full: path.join(dir, file), rel: file }))
         .sort((a, b) => a.rel.localeCompare(b.rel));
 
     if (files.length === 0) {
@@ -71,14 +59,9 @@ try {
         process.exit(0);
     }
 
-    for (const fileObj of files) {
-        const file = fileObj.rel;
-        const fullPath = fileObj.full;
-        const already = await client.query(
-            "SELECT 1 FROM migrations WHERE filename = $1",
-            [file],
-        );
-        if (already.rowCount > 0) {
+    for (const { rel: file, full: fullPath } of files) {
+        const already = await client.query("SELECT 1 FROM migrations WHERE filename = $1", [file]);
+        if (already.rowCount && already.rowCount > 0) {
             console.log(`Skipping ${file} (already applied)`);
             continue;
         }
@@ -88,15 +71,13 @@ try {
         try {
             await client.query("BEGIN");
             await client.query(sql);
-            await client.query(
-                "INSERT INTO migrations (filename) VALUES ($1)",
-                [file],
-            );
+            await client.query("INSERT INTO migrations (filename) VALUES ($1)", [file]);
             await client.query("COMMIT");
             console.log(`Applied ${file}`);
         } catch (err) {
             await client.query("ROLLBACK");
-            console.error(`Failed to apply ${file}:`, err.message || err);
+            const message = err instanceof Error ? err.message : String(err);
+            console.error(`Failed to apply ${file}:`, message);
             await client.end();
             process.exit(1);
         }
@@ -105,9 +86,10 @@ try {
     console.log("All migrations applied.");
     await client.end();
 } catch (err) {
-    console.error("Migration runner error:", err.message || err);
+    const message = err instanceof Error ? err.message : String(err);
+    console.error("Migration runner error:", message);
     try {
         await client.end();
-    } catch (e) {}
+    } catch {}
     process.exit(1);
 }
