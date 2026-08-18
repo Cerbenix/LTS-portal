@@ -1,6 +1,4 @@
 import PDFDocument from "pdfkit";
-import path from "path";
-import fs from "fs";
 
 interface InvoicePdfInput {
     invoiceNumber: string;
@@ -33,17 +31,11 @@ export async function generateInvoicePdfBuffer(invoice: InvoicePdfInput): Promis
         doc.on("end", () => resolve(Buffer.concat(buffers)));
         doc.on("error", (err) => reject(err));
 
-        // Paths
-        const fontPath = path.resolve(process.cwd(), "server/assets/fonts/Roboto-Regular.ttf");
-        const logoPath = path.resolve(process.cwd(), "server/assets/logo.png");
-
-        doc.font(fontPath);
+        doc.font(fontBuffer);
 
         // --- HEADER SECTION ---
         // 1. Logo (Top Left)
-        if (fs.existsSync(logoPath)) {
-            doc.image(logoPath, 50, 45, { width: 50 });
-        }
+        doc.image(logoBuffer, 50, 45, { width: 50 });
 
         // 2. Invoice Title & Meta (Top Right)
         doc.fontSize(18)
