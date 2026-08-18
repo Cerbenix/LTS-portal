@@ -31,11 +31,11 @@ export async function generateInvoicePdfBuffer(invoice: InvoicePdfInput): Promis
         doc.on("end", () => resolve(Buffer.concat(buffers)));
         doc.on("error", (err) => reject(err));
 
-        doc.font(fontBuffer);
+        doc.font(Buffer.from(fontBuffer));
 
         // --- HEADER SECTION ---
         // 1. Logo (Top Left)
-        doc.image(logoBuffer, 50, 45, { width: 50 });
+        doc.image(Buffer.from(logoBuffer), 50, 45, { width: 50 });
 
         // 2. Invoice Title & Meta (Top Right)
         doc.fontSize(18)
