@@ -16,6 +16,12 @@ export default defineNuxtConfig({
     }
   },
   nitro: {
+    serverAssets: [
+      {
+        baseName: 'assets',
+        dir: './server/assets'
+      }
+    ],
     imports: {
       dirs: ['./server/services']
     }

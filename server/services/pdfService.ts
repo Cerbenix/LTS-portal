@@ -15,7 +15,16 @@ interface InvoicePdfInput {
     currency: string;
 }
 
-export function generateInvoicePdfBuffer(invoice: InvoicePdfInput): Promise<Buffer> {
+export async function generateInvoicePdfBuffer(invoice: InvoicePdfInput): Promise<Buffer> {
+    const storage = useStorage('assets:server');
+    const [fontBuffer, logoBuffer] = await Promise.all([
+        storage.getItemRaw('fonts/Roboto-Regular.ttf'),
+        storage.getItemRaw('logo.png')
+    ]);
+
+    if (!fontBuffer || !logoBuffer) {
+        throw new Error("Missing required server assets");
+    }
     return new Promise((resolve, reject) => {
         const doc = new PDFDocument({ margin: 50, size: "A4" });
         const buffers: Buffer[] = [];
