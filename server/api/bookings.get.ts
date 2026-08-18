@@ -1,4 +1,4 @@
-export default defineEventHandler(async () => {
+export default defineEventHandler(async (event) => {
     try {
         const bookings = await fetchAllBookings();
         return { success: true, bookings };

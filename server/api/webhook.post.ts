@@ -4,7 +4,12 @@ export default defineEventHandler(async (event) => {
 
     try {
         const secret = typeof query.secret === "string" ? query.secret : undefined;
-        assertWebhookSecret(secret);
+        if (!secret || secret !== process.env.WEBHOOK_SECRET) {
+            throw createError({
+                statusCode: 401,
+                statusMessage: "Unauthorized: Invalid secret",
+            });
+        }
 
         const savedBooking = await handleBookingWebhook(body);
         if (!savedBooking) {
