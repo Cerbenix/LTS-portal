@@ -38,6 +38,6 @@ export async function fetchAllBookings() {
     const bookings = await getAllBookings();
     return bookings.map((booking: Record<string, unknown>) => ({
         ...booking,
-        formattedDate: booking.start_at ? new Date(booking.start_at as string).toLocaleDateString("lv-LV") : null,
+        formatted_date: booking.start_at ? new Date(booking.start_at as string).toLocaleDateString("lv-LV") : null,
     }));
 }
