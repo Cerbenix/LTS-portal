@@ -1,18 +1,5 @@
 import { getSql } from "../db/client";
-
-interface BookingInput {
-    id: string;
-    status: string;
-    linkId?: string | null;
-    linkName?: string | null;
-    parentName?: string | null;
-    parentEmail?: string | null;
-    parentPhone?: string | null;
-    childName?: string | null;
-    personalCode?: string | null;
-    startAt?: string | null;
-    rawPayload?: unknown;
-}
+import { BookingInput, BookingQueryOptions } from "~/types/bookingTypes";
 
 export async function upsertBooking(booking: BookingInput) {
     const sql = getSql();
@@ -39,16 +26,36 @@ export async function upsertBooking(booking: BookingInput) {
     return result?.[0];
 }
 
-export async function getAllBookings() {
+export async function getFilteredBookings(options: BookingQueryOptions = {}) {
     const sql = getSql();
+
+    const limit = options.limit ?? 50;
+    const offset = options.offset ?? 0;
+    const searchPattern = options.search ? `%${options.search}%` : null;
+    const status = options.status || null;
+    const startDateFrom = options.startDateFrom || null;
+    const startDateTo = options.startDateTo || null;
+
     return await sql`
-    SELECT 
-      id, status, link_id, link_name,
-      parent_name, parent_email, parent_phone,
-      child_name, personal_code,
-      start_at, created_at
-    FROM bookings
-    ORDER BY start_at DESC;
+      SELECT 
+          id, status, link_id, link_name,
+          parent_name, parent_email, parent_phone,
+          child_name, personal_code,
+          start_at, created_at
+      FROM bookings
+      WHERE (${status}::text IS NULL OR status = ${status})
+        AND (${startDateFrom}::timestamptz IS NULL OR start_at >= ${startDateFrom})
+        AND (${startDateTo}::timestamptz IS NULL OR start_at < ${startDateTo})
+        AND (
+          ${searchPattern}::text IS NULL OR 
+          parent_name ILIKE ${searchPattern} OR 
+          parent_email ILIKE ${searchPattern} OR 
+          child_name ILIKE ${searchPattern} OR
+          personal_code ILIKE ${searchPattern}
+        )
+      ORDER BY start_at DESC
+      LIMIT ${limit} 
+      OFFSET ${offset};
   `;
 }
 

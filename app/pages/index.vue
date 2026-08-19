@@ -7,10 +7,12 @@
 
             <h1>Bookings</h1>
 
-            <!-- Accordion List -->
-            <div class="accordion-list">
+            <div v-for="group in bookingGroups" :key="group.key" class="booking-group">
+                <h2 class="group-heading">{{ group.label }}</h2>
+
+                <div class="accordion-list">
                 <div 
-                    v-for="booking in bookings" 
+                    v-for="booking in group.bookings" 
                     :key="booking.id" 
                     class="accordion-item"
                     :class="{ active: expandedId === booking.id }"
@@ -19,7 +21,6 @@
                     <div class="accordion-header" @click="toggleAccordion(booking.id)">
                         <div class="summary-info">
                             <span class="parent-name"><strong>{{ booking.parent_name }}</strong></span>
-                            <span class="booking-date">{{ booking.formatted_date }}</span>
                         </div>
                         <div class="summary-meta">
                             <span class="chevron">▼</span>
@@ -55,6 +56,7 @@
                     </div>
                 </div>
             </div>
+            </div>
         </div>
 
         <div v-else class="login-container">
@@ -74,6 +76,32 @@ if (loggedIn.value) {
     const { data } = await useFetch("/api/bookings");
     bookings.value = data.value?.bookings || [];
 }
+
+const bookingGroups = computed(() => {
+    const groups = new Map();
+
+    for (const booking of bookings.value) {
+        const timestamp = booking.start_at ? new Date(booking.start_at).getTime() : null;
+        const key = timestamp === null || Number.isNaN(timestamp) ? "unscheduled" : String(timestamp);
+
+        if (!groups.has(key)) {
+            groups.set(key, {
+                key,
+                label: timestamp === null || Number.isNaN(timestamp)
+                    ? "Unscheduled"
+                    : new Date(timestamp).toLocaleString("lv-LV", {
+                        dateStyle: "full",
+                        timeStyle: "short",
+                    }),
+                bookings: [],
+            });
+        }
+
+        groups.get(key).bookings.push(booking);
+    }
+
+    return Array.from(groups.values());
+});
 
 const loadingId = ref(null);
 const expandedId = ref(null);
@@ -120,6 +148,15 @@ $border-color: #ddd;
     display: flex;
     flex-direction: column;
     gap: 10px;
+}
+
+.booking-group {
+    margin-bottom: 24px;
+}
+
+.group-heading {
+    margin: 0 0 10px;
+    font-size: 1.1rem;
 }
 
 .accordion-item {

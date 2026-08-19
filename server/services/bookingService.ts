@@ -1,4 +1,5 @@
-import { upsertBooking, getAllBookings } from "../repositories/bookingRepository";
+import { upsertBooking, getFilteredBookings } from "../repositories/bookingRepository";
+import { BookingQueryOptions } from "~/types/bookingTypes";
 
 type BookingWebhookPayload = {
     id: string;
@@ -34,10 +35,6 @@ export async function handleBookingWebhook(rawPayload: unknown) {
     return await upsertBooking(bookingData);
 }
 
-export async function fetchAllBookings() {
-    const bookings = await getAllBookings();
-    return bookings.map((booking: Record<string, unknown>) => ({
-        ...booking,
-        formatted_date: booking.start_at ? new Date(booking.start_at as string).toLocaleDateString("lv-LV") : null,
-    }));
+export async function fetchBookings(options: BookingQueryOptions = {}) {
+    return await getFilteredBookings(options);
 }
